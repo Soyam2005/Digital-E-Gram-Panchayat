@@ -317,3 +317,12 @@ For support and questions:
 ---
 
 **Note**: This is a demonstration project. For production use, ensure proper security measures, data validation, and compliance with local government regulations.
+
+export const firebaseConfig = {
+  apiKey: "AIzaSyD5UZLGnShDkyYmCKj6bfjmO9f1ERSg5Ik",
+  authDomain: "egram-panchayat-cf398.firebaseapp.com",
+  projectId: "egram-panchayat-cf398",
+  storageBucket: "egram-panchayat-cf398.firebasestorage.app",
+  messagingSenderId: "956673405466",
+  appId: "1:956673405466:web:1b5edd958e4c007cfc17a3",
+};
