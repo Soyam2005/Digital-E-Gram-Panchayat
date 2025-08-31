@@ -129,6 +129,9 @@ async function loadDashboardData() {
     // Load applications
     await loadApplications();
 
+    // Preload profile data
+    loadProfileData();
+
     // Update dashboard stats
     updateDashboardStats();
 
@@ -227,6 +230,8 @@ function loadRecentApplications() {
 }
 
 function showSection(sectionName) {
+  console.log("Showing section:", sectionName);
+  
   // Hide all sections
   const sections = document.querySelectorAll(".section");
   sections.forEach((section) => {
@@ -237,6 +242,7 @@ function showSection(sectionName) {
   const targetSection = document.getElementById(sectionName);
   if (targetSection) {
     targetSection.style.display = "block";
+    console.log("Section displayed:", sectionName);
 
     // Load section-specific data
     switch (sectionName) {
@@ -247,9 +253,12 @@ function showSection(sectionName) {
         displayApplications();
         break;
       case "profile":
+        console.log("Loading profile data...");
         loadProfileData();
         break;
     }
+  } else {
+    console.error("Target section not found:", sectionName);
   }
 }
 
@@ -311,7 +320,10 @@ function displayApplications() {
                   Applied on: ${new Date(
                     app.createdAt
                   ).toLocaleDateString()}<br>
-                  Reason: ${app.reason}
+                  Reason: ${app.reason}<br>
+                  <strong>Applicant:</strong> ${app.applicantName || `${currentUser.firstName} ${currentUser.lastName}`}<br>
+                  <strong>Phone:</strong> ${app.applicantPhone || currentUser.phone || "Not provided"}<br>
+                  <strong>Village:</strong> ${app.applicantVillage || currentUser.village || "Not provided"}
                 </small>
               </p>
             </div>
@@ -413,7 +425,10 @@ function displayFilteredApplications(filteredApplications) {
                   Applied on: ${new Date(
                     app.createdAt
                   ).toLocaleDateString()}<br>
-                  Reason: ${app.reason}
+                  Reason: ${app.reason}<br>
+                  <strong>Applicant:</strong> ${app.applicantName || `${currentUser.firstName} ${currentUser.lastName}`}<br>
+                  <strong>Phone:</strong> ${app.applicantPhone || currentUser.phone || "Not provided"}<br>
+                  <strong>Village:</strong> ${app.applicantVillage || currentUser.village || "Not provided"}
                 </small>
               </p>
             </div>
@@ -438,25 +453,102 @@ function displayFilteredApplications(filteredApplications) {
 }
 
 function loadProfileData() {
-  // Populate profile form
-  document.getElementById("profileFirstName").value =
-    currentUser.firstName || "";
-  document.getElementById("profileLastName").value = currentUser.lastName || "";
-  document.getElementById("profileEmail").value = currentUser.email || "";
-  document.getElementById("profilePhone").value = currentUser.phone || "";
-  document.getElementById("profileVillage").value = currentUser.village || "";
-  document.getElementById("profileDistrict").value = currentUser.district || "";
-  document.getElementById("profileState").value = currentUser.state || "";
-  document.getElementById("profilePincode").value = currentUser.pincode || "";
-  document.getElementById("profileAddress").value = currentUser.address || "";
-  document.getElementById("profileAadhar").value = currentUser.aadhar || "";
+  try {
+    console.log("Loading profile data for user:", currentUser);
+    
+    // Check if currentUser exists
+    if (!currentUser) {
+      console.error("currentUser is null or undefined");
+      return;
+    }
 
-  // Set account info
-  document.getElementById("profileUserId").textContent = currentUser.uid;
-  document.getElementById("profileRole").textContent = currentUser.role;
-  document.getElementById("profileMemberSince").textContent = new Date(
-    currentUser.createdAt
-  ).toLocaleDateString();
+    // Populate profile form
+    const profileFirstName = document.getElementById("profileFirstName");
+    const profileLastName = document.getElementById("profileLastName");
+    const profileEmail = document.getElementById("profileEmail");
+    const profilePhone = document.getElementById("profilePhone");
+    const profileVillage = document.getElementById("profileVillage");
+    const profileDistrict = document.getElementById("profileDistrict");
+    const profileState = document.getElementById("profileState");
+    const profilePincode = document.getElementById("profilePincode");
+    const profileAddress = document.getElementById("profileAddress");
+    const profileAadhar = document.getElementById("profileAadhar");
+
+    // Check if all elements exist
+    if (!profileFirstName || !profileLastName || !profileEmail || !profilePhone || 
+        !profileVillage || !profileDistrict || !profileState || !profilePincode || 
+        !profileAddress || !profileAadhar) {
+      console.error("Some profile form elements are missing, using fallback display");
+      displayFallbackProfile();
+      return;
+    }
+
+    // Populate form fields
+    profileFirstName.value = currentUser.firstName || "";
+    profileLastName.value = currentUser.lastName || "";
+    profileEmail.value = currentUser.email || "";
+    profilePhone.value = currentUser.phone || "";
+    profileVillage.value = currentUser.village || "";
+    profileDistrict.value = currentUser.district || "";
+    profileState.value = currentUser.state || "";
+    profilePincode.value = currentUser.pincode || "";
+    profileAddress.value = currentUser.address || "";
+    profileAadhar.value = currentUser.aadhar || "";
+
+    // Set account info
+    const profileUserId = document.getElementById("profileUserId");
+    const profileRole = document.getElementById("profileRole");
+    const profileMemberSince = document.getElementById("profileMemberSince");
+
+    if (profileUserId && profileRole && profileMemberSince) {
+      profileUserId.textContent = currentUser.uid;
+      profileRole.textContent = currentUser.role;
+      profileMemberSince.textContent = currentUser.createdAt 
+        ? new Date(currentUser.createdAt).toLocaleDateString()
+        : "Not available";
+    }
+
+    console.log("Profile data loaded successfully");
+  } catch (error) {
+    console.error("Error loading profile data:", error);
+    displayFallbackProfile();
+  }
+}
+
+function displayFallbackProfile() {
+  console.log("Displaying fallback profile");
+  const profileSection = document.getElementById("profile");
+  if (profileSection) {
+    const profileContent = profileSection.querySelector(".card-body");
+    if (profileContent) {
+      profileContent.innerHTML = `
+        <div class="row">
+          <div class="col-md-8">
+            <h5>Profile Information</h5>
+            <p><strong>Name:</strong> ${currentUser.firstName || ""} ${currentUser.lastName || ""}</p>
+            <p><strong>Email:</strong> ${currentUser.email || "Not provided"}</p>
+            <p><strong>Phone:</strong> ${currentUser.phone || "Not provided"}</p>
+            <p><strong>Village:</strong> ${currentUser.village || "Not provided"}</p>
+            <p><strong>District:</strong> ${currentUser.district || "Not provided"}</p>
+            <p><strong>State:</strong> ${currentUser.state || "Not provided"}</p>
+            <p><strong>Pincode:</strong> ${currentUser.pincode || "Not provided"}</p>
+            <p><strong>Address:</strong> ${currentUser.address || "Not provided"}</p>
+            <p><strong>Aadhar:</strong> ${currentUser.aadhar || "Not provided"}</p>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Account Information</h5>
+                <p><strong>User ID:</strong> <small class="text-muted">${currentUser.uid}</small></p>
+                <p><strong>Role:</strong> <span class="badge bg-primary">${currentUser.role}</span></p>
+                <p><strong>Member Since:</strong> ${currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : "Not available"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
 }
 
 async function handleProfileUpdate(e) {
